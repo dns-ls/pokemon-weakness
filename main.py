@@ -42,7 +42,7 @@ def find_pokemon(cleaned_text: str):
 
 def get_types(pokemon_en: str):
 	row = pokemon_types[pokemon_types['name'] == pokemon_en]
-	types = [row.type1, row.type2]
+	types = [row.type1.capitalize(), row.type2.capitalize()]
 	types = [t.values[0] for t in types if pd.notna(t.values[0])]
 	return types
 
@@ -51,7 +51,6 @@ def get_weakness(types: list):
 		return singleWeakness(types[0], types[1])
 	else:
 		return singleWeakness(types[0])
-	
 
 def main():
 	make_screenshot()
