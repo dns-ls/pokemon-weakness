@@ -2,7 +2,7 @@ import re
 from pyautogui import screenshot
 from PIL import Image, ImageFilter
 import pytesseract
-import os
+import time
 from difflib import get_close_matches
 import pandas as pd
 
@@ -31,8 +31,7 @@ def clean_text(found_text: str):
 
 def translate(name: str):
 	if cfg.LANGUAGE != "en":
-		pokedex_index = de_list.index(name)
-		translation = en_list[pokedex_index]
+		translation = en_list[de_list.index(name)]
 		return translation
 	return name
 
@@ -43,7 +42,7 @@ def find_pokemon(cleaned_text: str):
 
 def get_types(pokemon_en: str):
 	row = pokemon_types[pokemon_types['name'] == pokemon_en]
-	types = [row.type_1, row.type_2]
+	types = [row.type1, row.type2]
 	types = [t.values[0] for t in types if pd.notna(t.values[0])]
 	return types
 
@@ -52,3 +51,27 @@ def get_weakness(types: list):
 		return singleWeakness(types[0], types[1])
 	else:
 		return singleWeakness(types[0])
+	
+
+def main():
+	make_screenshot()
+	text = ocr_image(Image.open("scr_ed.png"))
+	if not text:
+		return
+	cleaned_text = clean_text(text)
+	if not cleaned_text:
+		return
+	try:
+		pokemon_en = translate(cleaned_text)
+		pokemon_en = find_pokemon(pokemon_en)
+	except (ValueError, IndexError):
+		return
+	types = get_types(pokemon_en)
+	weakness = get_weakness(types)
+	print(f"Pokémon: {cleaned_text}, {pokemon_en}, Types: {types}, Weaknesses: {weakness}")
+	return
+
+if __name__ == "__main__":
+	while True:
+		main()
+		time.sleep(10)
