@@ -8,7 +8,7 @@ import pandas as pd
 
 import CONFIG as cfg
 from list import de_list, en_list
-from model import singleWeakness
+import weakness_calc as w
 
 pokemon_types = pd.read_csv("p_types.csv")
 
@@ -53,7 +53,7 @@ def find_pokemon(cleaned_text: str):
 	'''
 	Findet den am besten passenden Pokemon-Namen in `en_list` für den bereinigten Text `cleaned_text`.
 	'''
-	closest_match = get_close_matches(cleaned_text, en_list, 1, 0)[0]
+	closest_match = get_close_matches(cleaned_text, de_list, 1, 0)[0]
 	# print("closest Match: " + closest_match)
 	return closest_match
 
@@ -71,9 +71,17 @@ def get_weakness(types: list):
 	Gibt die Schwächen des Pokemons basierend auf seinen `types` zurück.
 	'''
 	if len(types) == 2:
-		return singleWeakness(types[0], types[1])
+		return w.get_type_dict(types[0], types[1])
 	else:
-		return singleWeakness(types[0])
+		return w.get_type_dict(types[0])
+
+def get_lists_by_effectiveness(weakness: dict):
+	x4 = w.get_keys_by_value(weakness, 4.0)
+	x2 = w.get_keys_by_value(weakness, 2.0)
+	xhalf = w.get_keys_by_value(weakness, 0.5)
+	xquart = w.get_keys_by_value(weakness, 0.25)
+	xnone = w.get_keys_by_value(weakness, 0.0)
+	return [x4, x2, xhalf, xquart, xnone]
 
 def main():
 	make_screenshot()
@@ -81,16 +89,25 @@ def main():
 	if not text:
 		return
 	cleaned_text = clean_text(text)
+	pokemon_de = find_pokemon(cleaned_text)
 	if not cleaned_text:
 		return
 	try:
-		pokemon_en = translate(cleaned_text)
+		pokemon_en = translate(pokemon_de)
 		pokemon_en = find_pokemon(pokemon_en)
 	except (ValueError, IndexError):
+		print("Pokémon nicht gefunden.", cleaned_text, pokemon_de)
 		return
 	types = get_types(pokemon_en)
 	weakness = get_weakness(types)
-	print(f"Pokémon: {cleaned_text}, Typen: {types}, Schwächen: {weakness}")
+	weakness = w.convert_num_to_type(weakness)
+	effectiveness_lists = get_lists_by_effectiveness(weakness)
+	print(f"Pokémon: {pokemon_de}, Typen: {types}")
+	print("4x:", effectiveness_lists[0])
+	print("2x:", effectiveness_lists[1])
+	print("½x:", effectiveness_lists[2])
+	print("¼x:", effectiveness_lists[3])
+	print("0x:", effectiveness_lists[4])
 	return
 
 if __name__ == "__main__":
