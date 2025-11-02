@@ -5,6 +5,8 @@ import pytesseract
 import time
 from difflib import get_close_matches
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 
 import CONFIG as cfg
 from list import de_list, en_list
@@ -102,15 +104,16 @@ def main():
 	weakness = get_weakness(types)
 	weakness = w.convert_num_to_type(weakness)
 	effectiveness_lists = get_lists_by_effectiveness(weakness)
-	print(f"Pokémon: {pokemon_de}, Typen: {types}")
-	print("4x:", effectiveness_lists[0])
-	print("2x:", effectiveness_lists[1])
-	print("½x:", effectiveness_lists[2])
-	print("¼x:", effectiveness_lists[3])
-	print("0x:", effectiveness_lists[4])
+	# print(f"Pokémon: {pokemon_de}, Typen: {types}")
+	# print("4x:", effectiveness_lists[0])
+	# print("2x:", effectiveness_lists[1])
+	# print("½x:", effectiveness_lists[2])
+	# print("¼x:", effectiveness_lists[3])
+	# print("0x:", effectiveness_lists[4])
 	return
 
 if __name__ == "__main__":
+
 	while True:
 		main()
 		time.sleep(10)
