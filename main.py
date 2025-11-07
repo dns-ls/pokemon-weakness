@@ -13,6 +13,7 @@ from list import de_list, en_list
 import weakness_calc as w
 
 pokemon_types = pd.read_csv("p_types.csv")
+old_pokemon = ""
 
 def make_screenshot(region = cfg.SCR_REGION):
 	'''
@@ -86,30 +87,40 @@ def get_lists_by_effectiveness(weakness: dict):
 	return [x4, x2, xhalf, xquart, xnone]
 
 def main():
+	global old_pokemon
+
 	make_screenshot()
 	text = ocr_image(Image.open("scr_ed.png"))
 	if not text:
 		return
 	cleaned_text = clean_text(text)
 	pokemon_de = find_pokemon(cleaned_text)
+	if pokemon_de == old_pokemon:
+		return
+	
 	if not cleaned_text:
 		return
+	
 	try:
 		pokemon_en = translate(pokemon_de)
 		pokemon_en = find_pokemon(pokemon_en)
 	except (ValueError, IndexError):
 		print("Pokémon nicht gefunden.", cleaned_text, pokemon_de)
 		return
+	
 	types = get_types(pokemon_en)
 	weakness = get_weakness(types)
 	weakness = w.convert_num_to_type(weakness)
 	effectiveness_lists = get_lists_by_effectiveness(weakness)
+	
 	# print(f"Pokémon: {pokemon_de}, Typen: {types}")
 	# print("4x:", effectiveness_lists[0])
 	# print("2x:", effectiveness_lists[1])
 	# print("½x:", effectiveness_lists[2])
 	# print("¼x:", effectiveness_lists[3])
 	# print("0x:", effectiveness_lists[4])
+	
+	old_pokemon = pokemon_de
 	return
 
 if __name__ == "__main__":
