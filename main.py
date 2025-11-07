@@ -122,7 +122,7 @@ def main():
 	# print("0x:", effectiveness_lists[4])
 	
 	hud.update_labels(effectiveness_lists[0], effectiveness_lists[1], effectiveness_lists[2],
-	                  effectiveness_lists[3], effectiveness_lists[4])
+	                  effectiveness_lists[3], effectiveness_lists[4], pokemon_de, types)
 
 	old_pokemon = pokemon_de
 	return
