@@ -5,12 +5,16 @@ import pytesseract
 import time
 from difflib import get_close_matches
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
 
 import CONFIG as cfg
 from list import de_list, en_list
 import weakness_calc as w
+import hud
 
 pokemon_types = pd.read_csv("p_types.csv")
+old_pokemon = ""
 
 def make_screenshot(region = cfg.SCR_REGION):
 	'''
@@ -51,7 +55,7 @@ def translate(name: str):
 
 def find_pokemon(cleaned_text: str):
 	'''
-	Findet den am besten passenden Pokemon-Namen in `en_list` für den bereinigten Text `cleaned_text`.
+	Findet den am besten passenden Pokemon-Namen in `de_list` für den bereinigten Text `cleaned_text`.
 	'''
 	closest_match = get_close_matches(cleaned_text, de_list, 1, 0)[0]
 	# print("closest Match: " + closest_match)
@@ -84,33 +88,47 @@ def get_lists_by_effectiveness(weakness: dict):
 	return [x4, x2, xhalf, xquart, xnone]
 
 def main():
+	global old_pokemon
+	effectiveness_lists = [[], [], [], [], []]
 	make_screenshot()
 	text = ocr_image(Image.open("scr_ed.png"))
 	if not text:
 		return
 	cleaned_text = clean_text(text)
 	pokemon_de = find_pokemon(cleaned_text)
+	if pokemon_de == old_pokemon:
+		return
+	
 	if not cleaned_text:
 		return
+	
 	try:
 		pokemon_en = translate(pokemon_de)
-		pokemon_en = find_pokemon(pokemon_en)
+		# pokemon_en = find_pokemon(pokemon_en)
 	except (ValueError, IndexError):
 		print("Pokémon nicht gefunden.", cleaned_text, pokemon_de)
 		return
+
 	types = get_types(pokemon_en)
 	weakness = get_weakness(types)
 	weakness = w.convert_num_to_type(weakness)
 	effectiveness_lists = get_lists_by_effectiveness(weakness)
-	print(f"Pokémon: {pokemon_de}, Typen: {types}")
-	print("4x:", effectiveness_lists[0])
-	print("2x:", effectiveness_lists[1])
-	print("½x:", effectiveness_lists[2])
-	print("¼x:", effectiveness_lists[3])
-	print("0x:", effectiveness_lists[4])
+	
+	# print(f"Pokémon: {pokemon_de}, Typen: {types}")
+	# print("4x:", effectiveness_lists[0])
+	# print("2x:", effectiveness_lists[1])
+	# print("½x:", effectiveness_lists[2])
+	# print("¼x:", effectiveness_lists[3])
+	# print("0x:", effectiveness_lists[4])
+	
+	hud.update_labels(effectiveness_lists[0], effectiveness_lists[1], effectiveness_lists[2],
+	                  effectiveness_lists[3], effectiveness_lists[4], pokemon_de, types)
+
+	old_pokemon = pokemon_de
 	return
 
 if __name__ == "__main__":
+	
 	while True:
 		main()
 		time.sleep(10)
